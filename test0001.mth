@@ -1,0 +1,47 @@
+$方法名称 test0001
+
+#允许标的一行一个
+#一行一个表达式
+#没有默认为all
+$选股器
+	vars=R
+	R(BUYVOL(vars*(3+2),2,3,4))+5>9.94 
+
+#日初
+$DAY_BEFORE
+
+#日终
+$DAY_AFTER
+
+#委托前
+$ENTRUST_BEFORE
+
+
+#委托后
+$ENTRUST_AFTER
+
+
+#撤单前
+$CACNEL_BEFORE
+
+
+#撤单后
+$CANCEL_AFTER
+
+#月初
+$MONTH_BEFORE
+
+
+#月末
+$MONTH_AFTER
+
+#逐笔
+$TICk
+
+#9:30执行
+$MARKET_BEGIN
+
+#14:58执行
+$MARKET_END
+
+$NOTIFY zhuhu@info.net.cn
