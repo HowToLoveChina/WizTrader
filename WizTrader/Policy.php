@@ -28,18 +28,18 @@ interface iPolicy{
 	//! 日级回测收盘阶段模拟
 	function hook_market_end(string $date );
 };
-class Policy{
+class cPolicy{
 	function __construct(){
-		$self->all_type = array("backtest","test","monitor","market");
-		$self->type 			= NULL;
-		$self->datasource 		= NULL;
-		$self->name 			= NULL;
-		$self->begin 			= NULL;
-		$self->end 				= NULL;
+		$this->all_type = array("backtest","test","monitor","market");
+		$this->type 			= NULL;
+		$this->datasource 		= NULL;
+		$this->name 			= NULL;
+		$this->begin 			= NULL;
+		$this->end 				= NULL;
 	}
 	//! 为策略增加方法
 	final function AddMethod(string $method){
-		$self->methods[]=$method;
+		$this->methods[]=$method;
 	}
 	//! 初始化
 	private function Init(){
@@ -51,29 +51,29 @@ class Policy{
 			$pool = array_merge($pool,$all);
 		}
 		$pool = array_unique($pool);
-		if( in_array("all",$self) ){
-			$self->pool = array("all");
+		if( in_array("all",$this) ){
+			$this->pool = array("all");
 		}else{
-			$self->pool = $pool;
+			$this->pool = $pool;
 		}
 		
 	}
 	//! 运行
 	final function Run(string $type/*运行方式*/, iDataSource $datasource/*数据源对象*/,string $period="day"/*回测的数据颗粒*/,int $begin=0/*回测起始时间YYYYMMDD*/,int $end=0/*回测结束时间YYYYMMDD*/,bool $ignore=FALSE/*方法不支持时的处理方式*/){
 		//! 这个策略不支持这种运行方式
-		if( ! in_array( $type , $self->support_type() ) ){
+		if( ! in_array( $type , $this->support_type() ) ){
 			return false;
 		}
 		//! 保存运行方式
-		$self->type = $type ;
+		$this->type = $type ;
 		//! 保存数据源
-		$self->datasource = $ds;
+		$this->datasource = $ds;
 		//! 检查是不是所有方法都支持这个运行方式
 		$remove = array();
 		foreach($this->methods as $idx=>$method){
 			if( ! in_array($type,$this->$method->Support()) ){
 				if( ! $ignore ){ 
-					$self->errmsg = "$method not support type $type";
+					$this->errmsg = "$method not support type $type";
 					return false;
 				}else{
 					$remove[] = $idx;
@@ -86,7 +86,7 @@ class Policy{
 		}
 		//! 初始化产生股票池
 		$this->Init();
-		if( in_array("all",$self->pool) ){
+		if( in_array("all",$this->pool) ){
 			$stocks = $datasource->all();
 		}else{
 			$stocks = $this->pool;
@@ -215,14 +215,14 @@ class Policy{
 	private function BackTestEnumStockRecord(string $base/* 当前的数据根目录格式是policy/method */,
 											string $method/*适用方法*/,
 											string $stock/*当前股票*/){
-		$self->datasource->Open($period,$this->begin,$this->end);
+		$this->datasource->Open($period,$this->begin,$this->end);
 		$fn = sprintf("%s/%s.bs",$base,$stock);
 		$fp = fopen($fn,"wt+");
 		//!  日线以下级别，才有成交量和方向
 		//!         时间,触发信号的方法,买/卖,股票,价格,成交量,方向
 		#fprintf($fp,"date,method,action,stock,price,amount,dir,\r\n");
 		//! 为了减少合并时的工作量，表头不加入
-		while( $price = $self->datasource->EnumPrice() ){
+		while( $price = $this->datasource->EnumPrice() ){
 			//! 调用方法来处理价格
 			$result = $method->Price($stock,$price);
 			//! 没有信号出来
@@ -241,27 +241,27 @@ class Policy{
 		$self->datasource->Close();
 	}
 	//! 交易时间返回时分
-	private function MarketTime():int{
+	private function MarketTime()/*:int*/{
 		//! 要工作日
-		w = date('w');
-		if( w <1 || w > 5 ){
+		$w = date('w');
+		if( $w <1 || $w > 5 ){
 			return 0;
 		}
 		//! 要交易时段
-		if( hi < 915 || (hi > 1130 and hi<1300) || (hi>1500)){
+		if( $hi < 915 || ($hi > 1130 and $hi<1300) || ($hi>1500)){
 			return 0;
 		}
 		//! 精确到秒
-		return intval(date("His"));
+		return int(date("His"));
 	}
 	//! 实测
 	private function Testing($stocks){
 		//! 这是当前时间
-		while( self.MarketTime() == 0 ){
+		while( $this->MarketTime() == 0 ){
 			sleep(1);
 		}
 		
-		while( (stamp=self.MarketTime())>0 ){
+		while( ($stamp=$this->MarketTime())>0 ){
 			$price = $datasource->Realtime();
 			
 		}
@@ -269,13 +269,13 @@ class Policy{
 	//! 监测
 	private function Monitor($stocks){
 		//! 这是当前时间
-		while( self.MarketTime() == 0 ){
+		while( $this->MarketTime() == 0 ){
 			sleep(1);
 		}
 		
-		while( (stamp=self.MarketTime())>0 ){
+		while( ($stamp=$this->MarketTime())>0 ){
 			$price = $datasource->Realtime();
-			foreach( $self->methods as $m ){
+			foreach( $this->methods as $m ){
 				$m->price($price['stock'],$price);
 			} 
 			
@@ -288,7 +288,7 @@ class Policy{
 			sleep(1);
 		}
 		
-		while( (stamp=self.MarketTime())>0 ){
+		while( ($stamp=self.MarketTime())>0 ){
 			$price = $datasource->Realtime();
 			
 		}
